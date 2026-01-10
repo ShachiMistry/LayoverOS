@@ -141,6 +141,15 @@ export default function ChatInterface() {
 
       {/* Input Area */}
       <div className="p-4 bg-zinc-950/80 border-t border-zinc-800">
+
+        {/* Quick Actions (Visual Hint) */}
+        {messages.length === 1 && (
+          <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
+            <button onClick={() => setInput("Where is the nearest coffee?")} className="whitespace-nowrap px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-full text-xs text-zinc-300 transition-colors flex items-center gap-2">☕ Find Coffee</button>
+            <button onClick={() => setInput("Where are the restrooms?")} className="whitespace-nowrap px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-full text-xs text-zinc-300 transition-colors flex items-center gap-2">🚽 Restrooms</button>
+            <button onClick={() => setInput("Status of UA400")} className="whitespace-nowrap px-3 py-1.5 bg-emerald-900/30 hover:bg-emerald-900/50 border border-emerald-800/50 rounded-full text-xs text-emerald-300 transition-colors flex items-center gap-2">✈️ Track UA400</button>
+          </div>
+        )}
         <div className="flex gap-2">
           <input
             value={input}

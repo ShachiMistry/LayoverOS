@@ -44,18 +44,36 @@ export default function Home() {
         </header>
 
         {/* Dashboard Grid */}
-        <div className="flex-1 grid grid-cols-1lg:grid-cols-12 gap-6 min-h-0">
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
 
           {/* Left Panel: Context & Flight Info */}
+          {/* Left Panel: Flight Mode & Navigation */}
           <div className="lg:col-span-4 flex flex-col gap-6">
-            <FlightWidget />
 
-            {/* Map Placeholder or Weather */}
-            <div className="flex-1 bg-zinc-900/50 backdrop-blur border border-zinc-800 rounded-xl p-6 relative overflow-hidden">
+            {/* 1. Flight Tracker Section */}
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
+              <div className="relative bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden">
+                <div className="px-4 py-2 bg-zinc-950/50 border-b border-zinc-800 flex justify-between items-center">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-500">Flight Mode</span>
+                  <span className="text-[10px] text-zinc-500">Optional</span>
+                </div>
+                <div className="p-2">
+                  <FlightWidget />
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Interactive Terminal Map */}
+            <div className="flex-1 bg-zinc-900/50 backdrop-blur border border-zinc-800 rounded-xl p-6 relative overflow-hidden min-h-[300px]">
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5" />
-              <h3 className="text-zinc-400 text-xs font-mono uppercase tracking-widest mb-4">Live Terminal Map</h3>
-              <div className="w-full h-full flex items-center justify-center border-2 border-dashed border-zinc-800 rounded-lg">
-                <span className="text-zinc-600 font-mono text-sm">Interactive Map Module Loading...</span>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-zinc-400 text-xs font-mono uppercase tracking-widest">Live Terminal Map</h3>
+                <span className="text-[10px] bg-zinc-800 px-2 py-0.5 rounded text-zinc-400">Interactive</span>
+              </div>
+              <div className="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-zinc-800 rounded-lg bg-zinc-950/30 gap-2">
+                <span className="text-zinc-600 font-mono text-sm">Waiting for GPS...</span>
+                <span className="text-zinc-700 text-xs">"Where is the nearest coffee?"</span>
               </div>
             </div>
           </div>
