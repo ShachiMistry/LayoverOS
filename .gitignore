@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+*.pyc
+
+# Environment Variables (Secrets)
+.env
+
+# Editor
+.DS_Store
+.vscode/
+.idea/
+
+# Next.js
+.next/
+out/
+build/

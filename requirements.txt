@@ -1,0 +1,13 @@
+pymongo
+python-dotenv
+langgraph
+langchain
+langchain-core
+langchain-community
+langchain-mongodb
+langchain-fireworks
+langchain-voyageai
+langgraph-checkpoint-mongodb
+fastapi
+uvicorn
+openai
