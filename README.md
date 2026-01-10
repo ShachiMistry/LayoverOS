@@ -1,8 +1,6 @@
-Here is a complete, competition-grade `README.md` file. It incorporates all your phases, your architecture, and your specific "Multi-Leg Journey" scenario into a professional format.
+Apologies for the confusion. Here is the **exact, complete code** for your `README.md`.
 
-**Copy the code block below completely and paste it into your `README.md` file.**
-
----
+You can copy this entire block directly into your file. It includes the beautiful badges, the Mermaid diagram code (which GitHub will render automatically), and the specific 6-Phase breakdown you requested.
 
 ```markdown
 # ✈️ LayoverOS
@@ -15,39 +13,41 @@ Here is a complete, competition-grade `README.md` file. It incorporates all your
 
 > **"The operating system for stranded travelers."**
 
-**LayoverOS** is a resilient, autonomous AI agent that turns travel disruptions into curated experiences. Built on **MongoDB Atlas Vector Search** and **LangGraph**, it doesn't just search for coffee—it understands *time*.
-
-Whether you have a 45-minute sprint or a 6-hour delay, LayoverOS dynamically reshapes your itinerary in real-time, working across multiple airports (SFO, DEN, JFK) to ensure you are never lost, hungry, or bored.
+**LayoverOS** is a resilient, autonomous AI agent that turns travel disruptions into curated experiences. Built on **MongoDB Atlas Vector Search** and **LangGraph**, it connects a "Brain" (Reasoning) to a "Memory" (Database) to help stranded travelers navigate complex journeys.
 
 ---
 
 ## 🧠 The Problem
 Current travel apps are **static**. They show you a map, but they don't understand *context*.
-* **The Problem:** A generic map shows you a steakhouse 20 minutes away when you only have a 40-minute layover.
-* **The Gap:** If your flight is delayed by 3 hours, your entire plan needs to change instantly.
-* **The LayoverOS Solution:** An agent that combines **Flight Telemetry** + **User Preferences** (e.g., "Vegan", "Lactose Intolerant") + **Airport Location Data** to build a dynamic "Pre-Plan."
+* **The Gap:** A generic map shows you a steakhouse 20 minutes away when you only have a 40-minute layover.
+* **The Disruption:** If your flight is delayed by 3 hours, your entire plan needs to change instantly.
+* **The Solution:** LayoverOS acts as a **State-Persistent Agent** that combines **Flight Telemetry** + **User Preferences** (e.g., "Vegan", "Lactose Intolerant") + **Airport Location Data** to build a dynamic recovery plan.
 
 ---
 
-## 🌟 Key Scenarios (The "Golden Path")
+## 🌟 Demo Walkthrough: The Multi-Leg Journey
+*User Story: A traveler flying **SFO → DEN → JFK**. The flight is in the morning, the user is Lactose Intolerant, and they have a layover at DEN.*
 
-### 🛫 Scenario 1: The Multi-Leg Journey (SFO → DEN → JFK)
-*User Context: "I am flying SFO to JFK with a layover in Denver. I am lactose intolerant and vegan."*
+### 🟢 Phase 1: The Perfect Plan (Pre-Disruption)
+The agent analyzes the itinerary and builds a schedule based on time of day and dietary needs:
+1.  **Morning (SFO - Departure):** Agent detects "Morning" + "Lactose Intolerant."
+    * *Recommendation:* **Peet's Coffee (Terminal 3)** - Specifically highlights their oat milk availability.
+2.  **Afternoon (DEN - 3 Hr Layover):** Agent detects "Lunchtime" + "Vegan."
+    * *Recommendation:* **Root Down (Concourse C)** - Flagged for its high-rated farm-to-table vegan options.
+3.  **Night (JFK - Arrival):** Agent detects "Late Arrival."
+    * *Recommendation:* Suggests a quick grab-and-go dinner near the exit to maximize rest.
 
-1.  **Morning (SFO):** Agent detects "Morning Departure." Recommends **Peet's Coffee** (Terminal 3) with oat milk options.
-2.  **Afternoon (DEN - 3 Hr Layover):** Agent detects "Mid-Day" + "Vegan." Recommends **Root Down** (Concourse C) for a farm-to-table vegan lunch.
-3.  **Night (JFK - Arrival):** Agent detects "Evening Arrival." Suggests a quick dinner spot near the exit or a ride-share pickup zone.
-
-### ⚠️ Scenario 2: The Disruption (Dynamic Reshaping)
-*Event: The flight to JFK is delayed by 4 hours.*
+### 🔴 Phase 2: The Disruption (Dynamic Reshaping)
+*Event: The connecting flight from DEN to JFK is delayed by 4 hours.*
 * **Agent Reaction:** Instantly scraps the lunch plan.
-* **New Plan:** "Since you now have 7 hours at DEN, I have booked you a spot at the **Capital One Lounge** and found the **Sleeping Pods** in Concourse A so you can rest."
+* **New Context:** "User now has 7 hours at DEN."
+* **New Plan:** "Since you have time, I have located the **Capital One Lounge** for work and the **Sleeping Pods** in Concourse A so you can get deep rest before the redeye."
 
 ---
 
 ## 🏗️ System Architecture
 
-We built a **State-Persistent Multi-Agent System** where MongoDB Atlas acts as the "Brain" (Vector Memory) and the "Hippocampus" (State Checkpoints).
+We built an **AI Multi-Agent Backend** that connects a "Brain" (LangGraph Agent) to a "Memory" (MongoDB Atlas).
 
 ```mermaid
 graph TD
@@ -71,13 +71,69 @@ graph TD
 
 ```
 
-### 🔧 The "Stack" (Under the Hood)
+---
 
-* **Backend:** FastAPI & Python
-* **Orchestration:** LangGraph (State Machine for context switching)
-* **Database:** MongoDB Atlas (Vector Search + Flight Data Collections)
-* **Embeddings:** Voyage AI (`voyage-3-large`) for high-fidelity semantic understanding.
-* **Data Quality:** Custom generated datasets for SFO, DEN, and JFK using `generate_authentic_data.py` to ensure real terminal IDs ("SFO Terminal 3") match flight data.
+## 🛠️ Implementation Phases
+
+### 📅 Phase 1: The Foundation (Setup)
+
+* **Environment:** Set up a Python backend with `FastAPI`, `LangGraph`, `Voyage AI`, and `PyMongo`.
+* **Database:** Connected to **MongoDB Atlas**.
+* **Embeddings:** Configured **Voyage AI (voyage-3-large)** to convert text into vectors for semantic search.
+
+### 🛫 Phase 2: Authentic Data Generation (The "Knowledge")
+
+We didn't want fake data, so we generated **High-Fidelity Mock Data**:
+
+* **SFO Data:** Created `generate_authentic_data.py` to generate 160+ real SFO amenities (e.g., "Amy's Drive Thru", "Yoga Room") with strict location tags like "SFO Terminal 1".
+* **Multi-Airport:** Created `generate_airports.py` to add **DEN** (Denver) and **JFK** (New York) amenities.
+* **Ingestion:** Wrote `ingest_data.py` to:
+1. Read the JSON files.
+2. Generate Embeddings via Voyage AI.
+3. Upload ~300 documents to the `layover_os.amenities` collection in MongoDB.
+
+
+
+### 🔍 Phase 3: The Search Engine (Vector Search)
+
+* **Vector Index:** Created a specific **Atlas Search Index** (`vector_index`) in the MongoDB UI.
+* **Hybrid Filter:** Configured it to assume:
+* `embedding`: For semantic similarity (e.g., "Find me a place to sleep").
+* `terminal_id` & `airport_code`: For strict filtering (e.g., "ONLY in SFO Terminal 1").
+
+
+
+### ✈️ Phase 4: Flight Intelligence (The "Context")
+
+* **Flight Database:** Created `mock_flights.json` with robust scenarios:
+* `UA405`: Cancelled flight (Stranded).
+* `UA400`: Tight connection (90 mins).
+* `LH455`: 3-hour Delay (International Terminal).
+
+
+* **Flight Integration:** Wrote `ingest_flights.py` to upload these flights to a separate `layover_os.flights` collection.
+* **Data Mismatch Fix:** We realized flight terminals ("Terminal 3") didn't match amenity terminals ("SFO Terminal 3"). We ran a mass update to standardize everything to the full ID format so they connect perfectly.
+
+### 🧠 Phase 5: The Agent (The "Brain")
+
+**LangGraph Architecture (`agent.py`):** We built a state machine with two main nodes:
+
+1. **`analyze_context`**: Looks at User Input.
+* If `flight_id` is present (e.g., "UA405"), it switches to **Traveler Mode**. It calculates the layover time (e.g., "Cancelled" = 6 hours) and finds the correct terminal.
+* If no flight, it defaults to **Ghost Mode** (manual location).
+
+
+2. **`find_amenities`**: Takes that context and generates a **Smart Query**.
+* Context: "6 hour delay" -> Query: "comfortable sleeping pods, rest areas".
+* Context: "45 min connection" -> Query: "quick grab and go food".
+* **Hybrid Search:** The agent executes the search against MongoDB, combining the Vector embedding (for relevance) with the `terminal_id` filter (for location accuracy).
+
+
+
+### 🚀 Phase 6: The API & Deployment
+
+* **FastAPI (`main.py`):** We wrapped the AI Agent in a robust API Server so your frontend can talk to it via `POST /agent/chat`.
+* **GitHub Ready:** Included a `.gitignore` to protect secrets (`.env`) and wrote this Professional README with badges and setup instructions.
 
 ---
 
@@ -112,13 +168,11 @@ VOYAGE_API_KEY=voyage-01-xxxxxxxx
 
 ### 4. Run the Data Ingestion (One-Time Setup)
 
-We generated high-fidelity mock data to simulate a real airport environment.
-
 ```bash
-# Upload 160+ Amenities (SFO, DEN, JFK)
+# Upload 300+ Amenities (SFO, DEN, JFK)
 python backend/scripts/ingest_data.py
 
-# Upload Robust Flight Scenarios (Delays, Cancellations)
+# Upload Robust Flight Scenarios
 python backend/scripts/ingest_flights.py
 
 ```
@@ -153,29 +207,6 @@ layover-os/
 └── README.md               # Documentation
 
 ```
-
----
-
-## 🏆 Hackathon Implementation Details
-
-### Phase 1: The Foundation
-
-We established a connection between **Voyage AI** and **MongoDB Atlas** to enable semantic search capabilities, moving beyond simple keyword matching.
-
-### Phase 2: Authentic Data Generation
-
-We realized generic data wasn't enough. We built specific scripts to generate:
-
-* **160+ Real Amenities:** Mapped to specific terminals (e.g., "SFO Terminal 1").
-* **Standardized IDs:** Ran mass updates to ensure flight terminal data matches amenity location tags perfectly.
-
-### Phase 3: Flight Intelligence
-
-We integrated a flight database capable of simulating:
-
-* **UA400:** Tight connection (90 mins) -> Triggers "Grab & Go" logic.
-* **UA405:** Cancelled flight -> Triggers "Hotel/Lounge" logic.
-* **LH455:** International Delay -> Triggers "Showers/Sleep" logic.
 
 ---
 
