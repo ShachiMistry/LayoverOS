@@ -1,8 +1,4 @@
-Apologies for the confusion. Here is the **exact, complete code** for your `README.md`.
 
-You can copy this entire block directly into your file. It includes the beautiful badges, the Mermaid diagram code (which GitHub will render automatically), and the specific 6-Phase breakdown you requested.
-
-```markdown
 # ✈️ LayoverOS
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)
