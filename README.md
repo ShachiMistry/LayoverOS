@@ -1,81 +1,133 @@
-# ✈️ LayoverOS
+<div align="center">
+  <br />
+    <a href="https://youtu.be/example" target="_blank">
+      <img src="https://img.shields.io/badge/Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch Demo">
+    </a>
+  <br />
+  <br />
 
-![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-Backend-teal?style=for-the-badge&logo=fastapi&logoColor=white)
-![MongoDB](https://img.shields.io/badge/MongoDB-Atlas_Vector_Search-green?style=for-the-badge&logo=mongodb&logoColor=white)
-![LangGraph](https://img.shields.io/badge/LangGraph-Agent_Orchestration-orange?style=for-the-badge)
-![Fireworks AI](https://img.shields.io/badge/Fireworks_AI-Llama_3.3_70B-purple?style=for-the-badge)
-![VoyageAI](https://img.shields.io/badge/VoyageAI-Embeddings-blue?style=for-the-badge)
+  <h1 align="center">LayoverOS</h1>
+  <p align="center">
+    <strong>The First Context-Aware Operating System for Modern Travel</strong>
+  </p>
 
-> **"Bringing the Concierge Experience to Every Layover."**
-
-**LayoverOS** is an AI-powered "Airport Operating System" designed to transform valid layover time into a seamless experience. It replaces static airport maps and confusing kiosks with a **Context-Aware AI Concierge**.
-
----
-
-## 🚀 Executive Summary
-Built for the **MongoDB AI Hackathon**, LayoverOS leverages **Atlas Vector Search** for retrieval, **Fireworks AI (Llama 3.3)** for complex reasoning, and **LangGraph** for resilient agent orchestration.
-
-* **The Problem:** Travelers are stuck with static maps and generic search engines that don't understand *"Gate 54"* or *"45-minute layover."*
-* **The Solution:** A persistent, state-aware agent that dynamically routes queries between "Amenities" and "Flight Logistics."
-
----
-
-## 🏗️ System Architecture
-
-### 1. The "Brain" (Backend)
-* **Framework:** Python FastAPI + LangGraph.
-* **Agent Logic (`agent_graph.py`):**
-    * **Supervisor Node:** Uses "Adaptive Intent" to route queries.
-        * *"I am at SFO"* → **Scout Node** (Vector Search).
-        * *"Track UA400"* → **Flight Node** (Real-time Status).
-    * **Scout Node:** Uses **Voyage AI** embeddings to search MongoDB `amenities` collection.
-    * **Persistence:** `MongoDBSaver` stores conversation state in Atlas, ensuring users can switch devices without losing context.
-
-### 2. The "Cockpit" (Frontend)
-* **Framework:** Next.js 14 (React) with Tailwind CSS.
-* **Key Components:**
-    * `ChatInterface`: Real-time AI chat with auto-scroll and "Quick Action" chips.
-    * `TerminalMap`: Interactive SVG map with Pan/Zoom showing live user location.
-    * `FlightWidget`: Visual flight status ticker.
-
-### 3. Data & AI Stack
-* **Database:** MongoDB Atlas (M0 Sandbox).
-* **Vector Search:** Atlas Vector Search (Cosine Similarity).
-* **LLM:** Llama 3.3 70B Instruct (via Fireworks AI) for superior reasoning.
-* **Embeddings:** Voyage AI.
+  <p align="center">
+    <img src="https://img.shields.io/badge/MongoDB-Atlas_Vector_Search-green?style=flat-square&logo=mongodb" />
+    <img src="https://img.shields.io/badge/AI-LangGraph_Agents-blue?style=flat-square&logo=python" />
+    <img src="https://img.shields.io/badge/LLM-Llama_3_70B-purple?style=flat-square&logo=meta" />
+    <img src="https://img.shields.io/badge/Frontend-Next.js_14-black?style=flat-square&logo=next.js" />
+  </p>
+</div>
 
 ---
 
-## 🎤 Demo Walkthrough (Scenarios)
+## 🛑 The Problem: Airports are "Dead Zones"
 
-### Scenario A: The "Hungry Traveler" (Vector Search)
-* **User:** *"I am at SFO Terminal 2. I need coffee and a place to charge my phone."*
-* **Agent Action:** Identifies location (SFO T2) and queries the Vector Index using Voyage AI embeddings to find spots that match *both* "charging" and "coffee" semantically, not just by keyword.
+We spend **4.5 billion hours** annually waiting in airports. 
+Currently, the experience is fragmented:
+1.  **Static Maps:** Blueprints that don't know who you are or what you like.
+2.  **Disconnected Data:** Flight apps tracking planes, Yelp tracking food, but nothing connecting the two.
+3.  **Cognitive Load:** Trying to find a quiet spot with an outlet and good coffee in a new terminal is a research project.
 
-### Scenario B: The "Anxious Flyer" (Flight Tracking)
-* **User:** *"Check status for flight UA400."*
-* **Agent Action:** Switches context to the `FlightTracker` node, queries the mock `flights` collection in MongoDB, and returns real-time gate/status info.
-
----
-
-## ✅ Completed Milestones
-* **Phase 1: Core Intelligence (DONE):** Successfully implemented agent routing, context switching (SFO/JFK/DEN), and MongoDB state persistence.
-* **Phase 2: User Experience (DONE):** Deployed interactive zoomable terminal map and "Concierge Personality" using Llama 3.3.
-
-## 🔮 Future Scope
-* **Payments:** Integration with Stripe to buy lounge access directly in-chat.
-* **Live GPS:** Browser Geolocation API to replace manual location entry.
-* **Multi-Modal AI:** Scanning boarding passes via GPT-4o Vision.
+Airports shouldn't be valid "waiting rooms." They should be **responsive environments**.
 
 ---
 
-## 🛠️ Installation
+## ⚡️ The Solution: LayoverOS
+
+**LayoverOS** is not a chatbot. It is an **Agentic Coordinator** that sits between the traveler and the airport's infrastructure.
+
+It transforms a static location ("I am at SFO") into a dynamic set of actionable opportunities.
+*   *"I have 2 hours"* → Agent finds a lounge.
+*   *"My flight is delayed"* → Agent suggests a sleeping pod near the new gate.
+*   *"I'm hungry"* → Agent filters for open restaurants in *your* terminal, using Vector Search to match your preferences (e.g., "healthy," "fast").
+
+### Key Differentiator: "Agent-Driven UI"
+Unlike standard apps where users click buttons to trigger code, **LayoverOS reverses the flow**. The AI Agent decides when to trigger UI elements.
+*   **Example:** When the user agrees to book a lounge, the **Agent** (backend) sends a command to the **Frontend** to open the Payment Modal securely. The interface adapts to the conversation.
+
+---
+
+## 🏗 Technical Architecture
+
+We built a sophisticated **multi-agent system** orchestrated by **LangChain/LangGraph**, using **MongoDB Atlas** as the central nervous system.
+
+```mermaid
+graph TD
+    User[Traveler] -->|Chat Input| API[FastAPI Gateway]
+    API --> Supervisor[🤖 Supervisor Node]
+    
+    Supervisor -->|Intent: Search| Scout[🔍 Scout Node]
+    Supervisor -->|Intent: Flight| Tracker[✈️ Flight Node]
+    Supervisor -->|Intent: Pay| Bursar[💳 Bursar Node]
+    
+    subgraph "The Brain (MongoDB Atlas)"
+        Scout <-->|Vector Search| VStore[(Atlas Vector Store)]
+        Supervisor <-->|Read/Write State| Memory[(Checkpoint Saver)]
+    end
+    
+    Scout -->|RAG Context| LLM[Llama 3 Instruct]
+    Bursar -->|Trigger| Client[Frontend Payment UI]
+```
+
+### 1. The "Hippocampus": MongoDB Atlas
+We utilize MongoDB for two critical functions, making the agent "stateful" and "smart":
+*   **Vector Search (Semantic Retrieval):** We embedded 160+ airport amenities using **Voyage AI**. When a user asks "find a quiet place to work," we don't look for keywords. We compare the cosine similarity of "quiet work" against the *vibe* of amenities (embedding description) to find the nearest match.
+*   **Graph Checkpointing (Long-Term Memory):** Using `MongoDBSaver` with LangGraph, we persist the entire agent state (conversation history, current airport context, flight details) to Atlas. This means a user can lose WiFi, reload the page, or switch devices, and the Agent remembers exactly where they left off.
+
+### 2. The "Cortex": LangGraph & Llama 3
+We moved beyond simple "prompt engineering" to **Flow Engineering**.
+*   **Supervisor Node:** Uses Regex and NLU to route traffic. It detects context switches (e.g., user flew from SFO to JFK) and updates the global state `airport_code` variable seamlessly.
+*   **Scout Node:** Handles RAG (Retrieval Augmented Generation). It has a "Concierge Mode" fallback—if a query is too vague ("I'm hungry"), it asks for clarification ("Which terminal?") *before* wasting tokens on a search.
+
+### 3. The "Face": Next.js & Generative UI
+*   **Framework:** Next.js 14 (App Router).
+*   **Visuals:** Tailwind CSS with a custom "Cyber-Industrial" design system.
+*   **Interactive Blueprint:** Built a custom Scalable Vector Graphic (SVG) map engine that supports pan/zoom interactions via Framer Motion, plotting the user's location in real-time.
+
+---
+
+## 🚀 How to Run
+
+### Prerequisites
+*   Python 3.10+
+*   Node.js 18+
+*   MongoDB Atlas Cluster (M0 or higher)
 
 ### 1. Backend Setup
 ```bash
 cd backend
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-uvicorn main:app --reload
+
+# Create .env file with:
+# MONGO_URI=...
+# FIREWORKS_API_KEY=...
+# VOYAGE_API_KEY=...
+
+python3 api.py
+# Server runs on http://localhost:8000
+```
+
+### 2. Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+# Dashboard available at http://localhost:3000
+```
+
+---
+
+## 🔮 Future Roadmap
+
+1.  **Biometric Gate Integration:** Using FaceID to associate the user session with their physical ticket at the gate.
+2.  **Multi-Modal Vision:** Allow users to snap a photo of a menu to translate it and check for allergens using Llama 3.2 Vision.
+3.  **Cross-Airport Handover:** passing the agent state from "Departure Agent" to "Arrivals Agent" automatically upon landing.
+
+---
+
+<div align="center">
+  <p>Built with ❤️ for the MongoDB AI Hackathon</p>
+</div>
