@@ -11,7 +11,11 @@ interface Message {
   timestamp: string;
 }
 
-export default function ChatInterface() {
+interface ChatProps {
+  onTriggerPayment?: () => void;
+}
+
+export default function ChatInterface({ onTriggerPayment }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "agent",
@@ -21,13 +25,11 @@ export default function ChatInterface() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSend = async () => {
@@ -57,9 +59,19 @@ export default function ChatInterface() {
 
       const data = await res.json();
 
+      let aiResponse = data.response || "System Error: No response received.";
+
+      // Auto-Trigger Logic
+      if (aiResponse.includes("[PAYMENT_REQUIRED]")) {
+        aiResponse = aiResponse.replace("[PAYMENT_REQUIRED]", "");
+        if (onTriggerPayment) {
+          setTimeout(() => onTriggerPayment(), 1500); // Small delay for effect
+        }
+      }
+
       const agentMsg: Message = {
         role: "agent",
-        content: data.response || "System Error: No response received.",
+        content: aiResponse,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
@@ -92,7 +104,6 @@ export default function ChatInterface() {
 
       {/* Messages Area */}
       <div
-        ref={scrollRef}
         className="flex-1 overflow-y-auto p-4 space-y-4 font-mono text-sm scrollbar-thin scrollbar-thumb-zinc-700 hover:scrollbar-thumb-zinc-600"
       >
         <AnimatePresence initial={false}>
@@ -137,6 +148,7 @@ export default function ChatInterface() {
             </motion.div>
           )}
         </AnimatePresence>
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input Area */}

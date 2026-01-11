@@ -1,9 +1,17 @@
+"use client";
+
+"use client";
+
 import Image from "next/image";
 import ChatInterface from "./components/ChatInterface";
 import FlightWidget from "./components/FlightWidget";
-import { Zap, WifiOff } from "lucide-react";
+import TerminalMap from "./components/TerminalMap";
+import PaymentModal from "./components/PaymentModal";
+import { Zap, WifiOff, CreditCard } from "lucide-react";
+import React, { useState } from "react";
 
 export default function Home() {
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   return (
     <main className="min-h-screen bg-zinc-950 text-white relative overflow-hidden font-sans selection:bg-emerald-500/30">
 
@@ -40,6 +48,13 @@ export default function Home() {
               <WifiOff className="w-3 h-3" />
               <span>OFFLINE MODE READY</span>
             </div>
+            <button
+              onClick={() => setIsPaymentOpen(true)}
+              className="flex items-center gap-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20 border border-amber-500/20 text-amber-500 text-xs font-mono px-3 py-1.5 rounded-md transition-all cursor-pointer"
+            >
+              <CreditCard className="w-3 h-3" />
+              <span>UNITED CLUB ACCESS</span>
+            </button>
           </div>
         </header>
 
@@ -71,20 +86,28 @@ export default function Home() {
                 <h3 className="text-zinc-400 text-xs font-mono uppercase tracking-widest">Live Terminal Map</h3>
                 <span className="text-[10px] bg-zinc-800 px-2 py-0.5 rounded text-zinc-400">Interactive</span>
               </div>
-              <div className="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-zinc-800 rounded-lg bg-zinc-950/30 gap-2">
-                <span className="text-zinc-600 font-mono text-sm">Waiting for GPS...</span>
-                <span className="text-zinc-700 text-xs">"Where is the nearest coffee?"</span>
+              <div className="w-full h-[300px] rounded-lg overflow-hidden border border-zinc-800 bg-zinc-950/50">
+                <TerminalMap />
               </div>
             </div>
           </div>
 
           {/* Right Panel: The Agent */}
           <div className="lg:col-span-8 flex flex-col min-h-0">
-            <ChatInterface />
+            <ChatInterface onTriggerPayment={() => setIsPaymentOpen(true)} />
           </div>
 
         </div>
       </div>
-    </main>
+
+      <PaymentModal
+        isOpen={isPaymentOpen}
+        onClose={() => setIsPaymentOpen(false)}
+        onPay={() => {
+          // Future: Call Bursar Node
+          console.log("Payment Confirmed");
+        }}
+      />
+    </main >
   );
 }

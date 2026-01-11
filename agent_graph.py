@@ -36,8 +36,14 @@ embeddings = VoyageAIEmbeddings(model="voyage-3-large", voyage_api_key=VOYAGE_AP
 
 # Initialize LLM (Fireworks)
 if FIREWORKS_API_KEY:
-    print("🧠 Fireworks AI Connected (Llama-3.3-70b)")
-    llm = ChatFireworks(model="accounts/fireworks/models/llama-v3p3-70b-instruct", api_key=FIREWORKS_API_KEY)
+    print("🧠 Fireworks AI Connected (Mixtral-8x7b)")
+    llm = ChatFireworks(
+        # model="accounts/fireworks/models/llama-v3p3-70b-instruct", 
+        model="accounts/fireworks/models/mixtral-8x7b-instruct",
+        api_key=FIREWORKS_API_KEY,
+        max_retries=0,
+        request_timeout=5
+    )
 else:
     print("⚠️ Warning: No FIREWORKS_API_KEY. Agent will use fallback text.")
     llm = None
@@ -55,10 +61,23 @@ class AgentState(TypedDict):
 # --- NODE DEFINITIONS ---
 
 def supervisor_node(state: AgentState):
-    last_message = state['messages'][-1].lower()
+    raw_msg = state['messages'][-1]
+    if hasattr(raw_msg, 'content'):
+        last_message = raw_msg.content.lower()
+    else:
+        last_message = str(raw_msg).lower()
     
     import re
     
+    # 0. Context Switching (Airport Code)
+    # Check if user mentioned a supported airport to switch context
+    found_airport = None
+    for code in ["SFO", "JFK", "DEN"]:
+        if code in last_message.upper():
+            found_airport = code
+            print(f"✈️ Context Switch Detected: {found_airport}")
+            break
+            
     # 1. Check for Strong Flight Signals
     # We only trigger flight logic if user EXPLICITLY asks for it or provides a code (e.g. UA400)
     has_flight_code = re.search(r'[A-Z]{2}\d{3,4}', last_message.upper())
@@ -66,20 +85,24 @@ def supervisor_node(state: AgentState):
     is_planning_trip = "plan" in last_message and "to" in last_message # e.g. "Plan trip to JFK"
     
     if has_flight_keyword or has_flight_code or is_planning_trip:
-        return {"next_step": "flight_tracker"}
+        return {"next_step": "flight_tracker", "airport_code": found_airport} if found_airport else {"next_step": "flight_tracker"}
         
     # 2. Check for Payment Intent
-    elif "buy" in last_message or "pay" in last_message:
-        return {"next_step": "bursar"}
+    elif any(kw in last_message for kw in ["buy", "pay", "book", "purchase", "reserve"]):
+        return {"next_step": "bursar", "airport_code": found_airport} if found_airport else {"next_step": "bursar"}
         
     # 3. Default: Amenity Search (The Safety Net)
     # "I am at SFO" -> Scout
     # "Where is coffee?" -> Scout
     else:
-        return {"next_step": "scout"}
+        return {"next_step": "scout", "airport_code": found_airport} if found_airport else {"next_step": "scout"}
 
 def scout_node(state: AgentState):
-    query_text = state['messages'][-1]
+    raw_msg = state['messages'][-1]
+    if hasattr(raw_msg, 'content'):
+        query_text = raw_msg.content
+    else:
+        query_text = str(raw_msg)
     airport = state.get('airport_code', 'SFO') # Default to SFO
     
     print(f"\n[Scout] Searching '{query_text}' in {airport}...")
@@ -89,17 +112,35 @@ def scout_node(state: AgentState):
     if len(query_text.split()) < 5 and ("at" in query_text.lower() or "in" in query_text.lower()) and airport.lower() in query_text.lower():
         # User is setting context: "I am at SFO"
         if llm:
-            sys_msg = SystemMessage(content=f"You are a helpful Concierge at {airport}. The user just arrived. Ask them TWO things: which Terminal they are in, and what amenity they are looking for. Keep it short.")
-            human_msg = HumanMessage(content=query_text)
-            ai_msg = llm.invoke([sys_msg, human_msg])
-            return {"messages": [ai_msg.content]}
+            try:
+                sys_msg = SystemMessage(content=f"You are a helpful Concierge at {airport}. The user just arrived. Ask them TWO things: which Terminal they are in, and what amenity they are looking for. Keep it short.")
+                human_msg = HumanMessage(content=query_text)
+                ai_msg = llm.invoke([sys_msg, human_msg])
+                return {"messages": [ai_msg.content]}
+            except Exception as e:
+                print(f"❌ LLM Concierge Error: {e}")
+                return {"messages": ["Concierge: Which terminal are you in, and what do you need?"]}
         else:
             return {"messages": ["Concierge: Which terminal are you in, and what do you need?"]}
     
     query_vector = embeddings.embed_query(query_text)
     
+    # --- TERMINAL FILTERING ---
+    import re
+    terminal_match = re.search(r'Terminal\s+(\w+)', query_text, re.IGNORECASE)
+    
+    # Base filter: Airport matches
+    search_filter = {"airport_code": {"$eq": airport}}
+    
+    if terminal_match:
+        target_terminal = terminal_match.group(1)
+        # Try to match the format in DB (usually just the number/letter)
+        # We add it to the filter logic
+        print(f"🎯 Filtering for Terminal: {target_terminal}")
+        search_filter["terminal_id"] = {"$eq": target_terminal}
+
     # --- PRO FILTERING ---
-    # We only show results for the CURRENT AIRPORT
+    # We only show results for the CURRENT AIRPORT (and Terminal if specified)
     results = collection.aggregate([
         {
             "$vectorSearch": {
@@ -108,9 +149,7 @@ def scout_node(state: AgentState):
                 "queryVector": query_vector,
                 "numCandidates": 100,
                 "limit": 10,
-                "filter": {
-                    "airport_code": {"$eq": airport}
-                }
+                "filter": search_filter
             }
         },
         {"$limit": 3}, # Take top 3 after filter
@@ -151,17 +190,18 @@ def scout_node(state: AgentState):
         if llm:
              # Natural Language Synthesis
             sys_msg = SystemMessage(
-                content=f"You are LayoverOS, a helpful airport concierge at {airport}. "
-                        "Answer the user's request based ONLY on the provided amenities context. "
-                        "Keep it short, friendly, and helpful. Mention the location (terminal) and status (open/closed)."
+                content=f"You are LayoverOS, an advanced operating system for travel. {airport}. "
+                        "The user is on a layover. Optimize their time based on the amenities found. "
+                        "Keep it short, professional, and helpful. Mention the location (terminal) and status."
             )
             human_msg = HumanMessage(content=f"User Request: {query_text}\n\nContext Options:\n{context}")
             try:
                 ai_msg = llm.invoke([sys_msg, human_msg])
                 response = ai_msg.content
             except Exception as e:
-                print(f"❌ LLM Error: {e}") # Print to console
-                response = f"Scout (Fallback due to error: {str(e)}): Here are the options:\n{context}"
+                print(f"❌ LLM Error: {e}") 
+                # Hackathon Fix: Hide the ugly error from the UI. User just wants results.
+                response = f"Scout: Here are the top options I found for you:\n{context}"
         else:
             # Fallback
             response = f"Scout: Here are the top options at {airport}:\n\n" + "\n".join(found_items)
@@ -172,7 +212,11 @@ def flight_node(state: AgentState):
     """
     Looks up flight details in the 'flights' collection.
     """
-    last_message = state['messages'][-1].upper()
+    raw_msg = state['messages'][-1]
+    if hasattr(raw_msg, 'content'):
+        last_message = raw_msg.content.upper()
+    else:
+        last_message = str(raw_msg).upper()
     print(f"\n[FlightTracker] Analyzing: {last_message}")
     
     # Simple extraction: look for typical flight codes like "UA123"
@@ -226,17 +270,27 @@ def flight_node(state: AgentState):
                 
             return {"messages": [response], "flight_number": flight_num}
         else:
-            response = f"FlightTracker: I couldn't find flight {flight_num} in our database."
-            return {"messages": [response], "flight_number": flight_num}
+            # If not found, CLEAR the state so we don't get stuck on a typo
+            response = f"FlightTracker: I couldn't find flight {flight_num} in our database. Please double-check the number (e.g., UA400)."
+            return {"messages": [response], "flight_number": ""}
     else:
         # Fallback search in flights collection using text if no regex match?
         # For hackathon, just ask for clarity
-        response = "FlightTracker: Please provide a valid flight number (e.g., UA450)."
+        if llm:
+            try:
+                 response = llm.invoke("User wants to find a flight but didn't provide a number. Ask them for it politely. Keep it short.").content
+            except Exception as e:
+                 print(f"❌ LLM Flight Fallback Error: {e}")
+                 response = "FlightTracker: I can help with that. What is the flight number? (e.g., UA400)"
+        else:
+             response = "FlightTracker: I can help with that. What is the flight number? (e.g., UA400)"
+             
         return {"messages": [response]}
 
 def bursar_node(state: AgentState):
     print("\n[Bursar] Processing Payment...")
-    return {"messages": ["Bursar: Payment of $50 USDC successful. Access Granted."]}
+    # We send a special tag that the Frontend recognizes to open the Modal
+    return {"messages": ["Bursar: I have located the United Club in Terminal 3. Access is $50. Opening secure payment gateway... [PAYMENT_REQUIRED]"]}
 
 # --- GRAPH CONSTRUCTION ---
 
