@@ -21,6 +21,9 @@
 
 ---
 
+<img width="1470" height="829" alt="image" src="https://github.com/user-attachments/assets/e592e0ae-6d84-4907-bcf6-0c464225d4f4" />
+
+
 ## 🛑 The Problem: Airports are "Dead Zones"
 
 We spend **4.5 billion hours** annually waiting in airports. 
